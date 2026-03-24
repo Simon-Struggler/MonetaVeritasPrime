@@ -1,0 +1,102 @@
+Терминал 1 (Auth)
+
+bash
+cd auth
+uvicorn main:app --reload --port 8001
+Терминал 2 (Catalog)
+
+bash
+cd catalog
+uvicorn main:app --reload --port 8002
+Терминал 3 (Collections)
+
+bash
+cd collections
+uvicorn main:app --reload --port 8003
+Терминал 4 (Gateway)
+
+bash
+cd gateway
+uvicorn main:app --reload --port 8000
+
+
+1. Получите токен через Swagger UI
+Откройте http://localhost:8000/docs (это API Gateway, который проксирует все сервисы).
+
+Найдите раздел auth, раскройте POST /auth/login.
+
+Нажмите Try it out.
+
+В теле запроса введите:
+
+json
+{
+  "username": "user2",
+  "password": "123"
+}
+Нажмите Execute.
+
+В ответе скопируйте значение access_token (без кавычек). Например:
+
+text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMiIsInVzZXJfaWQiOjIsImV4cCI6MTc3NDM4NzkyNX0.s_OID2byqTELWdcmVs0_6EolFkvr5NXMyUu5D6GVtkk
+2. Установите глобальную авторизацию
+В правом верхнем углу страницы Swagger UI найдите кнопку Authorize (🔒).
+
+Нажмите на неё.
+
+В открывшемся окне введите токен в поле: Bearer <ваш_токен>
+Например:
+
+text
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMiIsInVzZXJfaWQiOjIsImV4cCI6MTc3NDM4NzkyNX0.s_OID2byqTELWdcmVs0_6EolFkvr5NXMyUu5D6GVtkk
+Нажмите Authorize, затем Close.
+
+Теперь все последующие запросы, которые вы выполняете через Swagger UI, будут автоматически содержать заголовок Authorization: Bearer <токен>.
+
+3. Если кнопка Authorize отсутствует
+В этом случае вам придётся добавлять токен вручную в каждый запрос:
+
+В каждом эндпоинте, который требует авторизации, найдите поле Authorization в секции параметров.
+
+Введите туда токен в формате Bearer <токен> и выполните запрос.
+
+4. Проверка
+После настройки авторизации выполните запрос на создание страны:
+
+Найдите раздел catalog, раскройте POST /catalog/countries.
+
+Нажмите Try it out.
+
+В теле запроса введите: {"title": "Россия"}
+
+Нажмите Execute.
+
+Вы должны получить ответ: {"title":"Россия","id":1}.
+
+Если ответ пришёл – всё работает. Если вы получили ошибку 401 (Unauthorized), значит токен не передан или истёк. Получите новый токен через /auth/login и повторите авторизацию.
+
+5. Что делать, если Swagger UI через Gateway не показывает эндпоинты?
+Убедитесь, что все сервисы запущены и Gateway работает. Если эндпоинты не отображаются, попробуйте открыть Swagger UI напрямую у Catalog Service: http://localhost:8002/docs. Там вы также сможете выполнять запросы (только с портом 8002). Но в этом случае вы будете обращаться не через Gateway, а напрямую. Токен также нужно передавать через кнопку Authorize.
+
+6. Создание монеты
+После создания страны (с id=1) вы можете создать монету:
+
+json
+{
+  "type": "coin",
+  "name": "10 рублей 2001",
+  "country_id": 1,
+  "denomination": 10,
+  "currency": "RUB"
+}
+Выполните POST /catalog/items, используя ту же авторизацию.
+
+7. Работа с коллекциями
+После создания монеты (вы получите её id) добавьте её в коллекцию:
+
+json
+{"item_id": 1}
+через POST /collections/ (в разделе collections).
+
+Теперь всё должно работать. Swagger UI – самый удобный способ тестирования API.
