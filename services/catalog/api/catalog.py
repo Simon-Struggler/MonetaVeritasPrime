@@ -177,7 +177,7 @@ def delete_material(
 # ==================== МОНЕТНЫЕ ДВОРЫ ====================
 @router.get("/mints", response_model=List[schemas.MintResponse])
 def list_mints(db: Session = Depends(get_db)):
-    return db.query(models.Mint).options(joinedload(models.Mint.country)).all()
+    return db.query(models.Mint).all()
 
 @router.post("/mints", response_model=schemas.MintResponse, status_code=201)
 def create_mint(
@@ -316,35 +316,31 @@ def create_item(
 ):
     if not user_id:
         raise HTTPException(401, "Authentication required")
-    # Создаём базовый объект
-    base_data = item.model_dump(exclude={"type", "denomination", "currency", "material_id", "weight", "mint_id", "diameter", "serial_number", "width", "height"})
-    base_data["author_id"] = user_id
-    base_data["type"] = item.type
-    db_item = models.CollectibleItem(**base_data)
-    db.add(db_item)
-    db.flush()  # получаем id
+
+    # Преобразуем входящие данные в словарь
+    data = item.model_dump()
+    data["author_id"] = user_id
+    data.pop("type", None)  # убираем type, т.к. в моделях его нет (используется наследование)
 
     if item.type == "coin":
-        coin_data = item.model_dump(exclude={"type", "name", "category_id", "description", "country_id", "year", "image_url", "is_published", "is_on_main"})
-        coin_data["id"] = db_item.id
-        db_coin = models.Coin(**coin_data)
-        db.add(db_coin)
-        db.commit()
-        db.refresh(db_coin)
-        # Загружаем связанные данные
-        db_coin = db.query(models.Coin).filter(models.Coin.id == db_coin.id).options(
+        db_item = models.Coin(**data)
+    else:
+        db_item = models.Banknote(**data)
+
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+
+    # Загружаем связанные данные (для ответа)
+    if item.type == "coin":
+        db_item = db.query(models.Coin).filter(models.Coin.id == db_item.id).options(
             joinedload(models.Coin.material),
             joinedload(models.Coin.mint).joinedload(models.Mint.country)
         ).first()
-        return db_coin
     else:
-        banknote_data = item.model_dump(exclude={"type", "name", "category_id", "description", "country_id", "year", "image_url", "is_published", "is_on_main"})
-        banknote_data["id"] = db_item.id
-        db_banknote = models.Banknote(**banknote_data)
-        db.add(db_banknote)
-        db.commit()
-        db.refresh(db_banknote)
-        return db_banknote
+        db_item = db.query(models.Banknote).filter(models.Banknote.id == db_item.id).first()
+
+    return db_item
 
 @router.put("/items/{item_id}", response_model=Union[schemas.CoinResponse, schemas.BanknoteResponse])
 def update_item(
@@ -355,35 +351,33 @@ def update_item(
 ):
     if not user_id:
         raise HTTPException(401, "Authentication required")
+
+    # Получаем существующий предмет с проверкой прав
     db_item = get_item(db, item_id, user_id)
     if not db_item:
         raise HTTPException(404, "Item not found")
     if db_item.author_id != user_id:
         raise HTTPException(403, "Not enough permissions")
-    # Обновляем базовые поля
-    base_data = item.model_dump(exclude={"type", "denomination", "currency", "material_id", "weight", "mint_id", "diameter", "serial_number", "width", "height"})
-    for key, value in base_data.items():
-        setattr(db_item, key, value)
-    # Обновляем специфические поля
-    if db_item.type == "coin":
-        coin = db.query(models.Coin).filter(models.Coin.id == item_id).first()
-        coin_data = item.model_dump(exclude={"type", "name", "category_id", "description", "country_id", "year", "image_url", "is_published", "is_on_main"})
-        for key, value in coin_data.items():
-            setattr(coin, key, value)
-    else:
-        banknote = db.query(models.Banknote).filter(models.Banknote.id == item_id).first()
-        banknote_data = item.model_dump(exclude={"type", "name", "category_id", "description", "country_id", "year", "image_url", "is_published", "is_on_main"})
-        for key, value in banknote_data.items():
-            setattr(banknote, key, value)
+
+    # Обновляем поля (используем только те, что есть в модели)
+    data = item.model_dump(exclude={"type"})  # исключаем type, чтобы не было конфликта
+    for key, value in data.items():
+        if hasattr(db_item, key):
+            setattr(db_item, key, value)
+
     db.commit()
-    # Возвращаем обновлённый объект
+    db.refresh(db_item)
+
+    # Возвращаем обновлённый объект с связями
     if db_item.type == "coin":
-        return db.query(models.Coin).filter(models.Coin.id == item_id).options(
+        db_item = db.query(models.Coin).filter(models.Coin.id == item_id).options(
             joinedload(models.Coin.material),
             joinedload(models.Coin.mint).joinedload(models.Mint.country)
         ).first()
     else:
-        return db.query(models.Banknote).filter(models.Banknote.id == item_id).first()
+        db_item = db.query(models.Banknote).filter(models.Banknote.id == item_id).first()
+
+    return db_item
 
 @router.delete("/items/{item_id}", status_code=204)
 def delete_item(

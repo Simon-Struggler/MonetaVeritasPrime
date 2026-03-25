@@ -24,6 +24,7 @@ class Mint(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(25), nullable=False)
     country_id = Column(Integer, ForeignKey("countries.id"))
+    country = relationship("Country")
     __table_args__ = (UniqueConstraint("title", "country_id", name="unique_mint_per_country"),)
 
 class CollectibleItem(Base):
