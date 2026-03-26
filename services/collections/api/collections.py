@@ -17,11 +17,12 @@ async def get_my_collection(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
 ):
+    print(f"User ID: {user_id}")
     items = db.query(models.UserCollectionItem).filter(
         models.UserCollectionItem.user_id == user_id
     ).offset(skip).limit(limit).all()
 
-    # Получаем данные о предметах из Catalog Service (асинхронно)
+    # Получаем данные о предметах из Catalog Service
     async with httpx.AsyncClient() as client:
         result = []
         for ci in items:
@@ -37,7 +38,6 @@ async def get_my_collection(
                         "added_at": ci.added_at,
                         "item": item_data
                     })
-                # если предмет не найден, пропускаем
             except Exception:
                 continue
     return result

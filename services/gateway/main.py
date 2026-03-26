@@ -18,14 +18,16 @@ SERVICE_MAP = {
     "auth": settings.AUTH_SERVICE_URL,
     "catalog": settings.CATALOG_SERVICE_URL,
     "collections": settings.COLLECTIONS_SERVICE_URL,
+    "exchange": settings.EXCHANGE_SERVICE_URL,
 }
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def gateway(request: Request, path: str):
     # Определяем целевой сервис
     for prefix, url in SERVICE_MAP.items():
-        if path.startswith(prefix):
-            target_url = f"{url}/{path}"
+        if path.startswith(prefix + "/"):
+            target_path = path[len(prefix) + 1:]
+            target_url = f"{url}/{target_path}"
             break
     else:
         raise HTTPException(404, "Not found")
@@ -81,7 +83,6 @@ def custom_openapi():
         }
     }
     # Для всех эндпоинтов (включая проксируемые) указываем, что требуется авторизация
-    # Но это только для документации, реальная проверка происходит в сервисах
     for path in openapi_schema["paths"]:
         if path != "/health":
             for method in openapi_schema["paths"][path]:

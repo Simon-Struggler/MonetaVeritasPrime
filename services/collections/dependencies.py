@@ -6,11 +6,15 @@ from config import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/auth/login")
 
 def get_current_user_id(token: str = Depends(oauth2_scheme)):
+    print(f"Token: {token[:20]}...")
+    print(f"SECRET_KEY: {settings.SECRET_KEY}")
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        print(f"Payload: {payload}")
         user_id = payload.get("user_id")
         if user_id is None:
             raise HTTPException(401, "Invalid token")
         return user_id
-    except JWTError:
+    except JWTError as e:
+        print(f"JWTError: {e}")
         raise HTTPException(401, "Invalid token")

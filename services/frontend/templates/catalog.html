@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог{% endblock %}
+
+{% block content %}
+<h1>Каталог предметов</h1>
+
+<div class="row">
+    {% for item in items %}
+    <div class="col-md-4 mb-4">
+        <div class="card card-collector">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.name }}</h5>
+                <p class="card-text">Тип: {{ item.type }}</p>
+                <p class="card-text">Автор: {{ item.author_id }}</p>
+                <button class="btn btn-outline-gold" onclick="addToCollection({{ item.id }})">Добавить в коллекцию</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+async function addToCollection(itemId) {
+    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+    const response = await fetch('/collections', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ item_id: itemId })
+    });
+    if (response.ok) {
+        alert('Добавлено в коллекцию');
+    } else {
+        alert('Ошибка');
+    }
+}
+</script>
+{% endblock %}

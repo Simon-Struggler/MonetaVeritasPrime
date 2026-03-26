@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Коллекция{% endblock %}
+
+{% block content %}
+<h1>Моя коллекция</h1>
+
+<div class="row">
+    {% for item in collection %}
+    <div class="col-md-4 mb-4">
+        <div class="card card-collector">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.item.name }}</h5>
+                <p class="card-text">Тип: {{ item.item.type }}</p>
+                <button class="btn btn-outline-gold" onclick="removeFromCollection({{ item.id }})">Удалить</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+async function removeFromCollection(collectionId) {
+    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+    const response = await fetch(`/collections/${collectionId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (response.ok) {
+        location.reload();
+    } else {
+        alert('Ошибка');
+    }
+}
+</script>
+{% endblock %}

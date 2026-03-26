@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 text-gold">Добро пожаловать в MonetaVeritas</h1>
+    <p class="lead">Ваш надежный помощник в мире коллекционирования монет и банкнот</p>
+    <a href="/login" class="btn btn-gold btn-lg">Начать</a>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card card-collector">
+            <div class="card-header">Каталог</div>
+            <div class="card-body">
+                <p>Просматривайте и добавляйте предметы в каталог.</p>
+                <a href="/catalog" class="btn btn-outline-gold">Перейти</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-collector">
+            <div class="card-header">Коллекция</div>
+            <div class="card-body">
+                <p>Управляйте своей коллекцией предметов.</p>
+                <a href="/collections" class="btn btn-outline-gold">Перейти</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-collector">
+            <div class="card-header">Обмен</div>
+            <div class="card-body">
+                <p>Обменивайтесь предметами с другими коллекционерами.</p>
+                <a href="/exchange" class="btn btn-outline-gold">Перейти</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

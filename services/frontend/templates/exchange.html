@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Обмен{% endblock %}
+
+{% block content %}
+<h1>Обмен предметами</h1>
+
+<h2>Мои заявки</h2>
+<div class="table-responsive">
+    <table class="table table-collector">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Предлагаю</th>
+                <th>Запрашиваю</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trade in trades %}
+            <tr>
+                <td>{{ trade.id }}</td>
+                <td>{{ trade.offered_item.name }}</td>
+                <td>{{ trade.requested_item.name }}</td>
+                <td>{{ trade.status }}</td>
+                <td>
+                    {% if trade.status == 'pending' %}
+                        <button class="btn btn-outline-gold" onclick="cancelTrade({{ trade.id }})">Отменить</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<h2>Создать заявку</h2>
+<form id="tradeForm">
+    <div class="mb-3">
+        <label for="requestedUserId" class="form-label">ID пользователя</label>
+        <input type="number" class="form-control" id="requestedUserId" required>
+    </div>
+    <div class="mb-3">
+        <label for="offeredItemId" class="form-label">ID предлагаемого предмета</label>
+        <input type="number" class="form-control" id="offeredItemId" required>
+    </div>
+    <div class="mb-3">
+        <label for="requestedItemId" class="form-label">ID запрашиваемого предмета</label>
+        <input type="number" class="form-control" id="requestedItemId" required>
+    </div>
+    <div class="mb-3">
+        <label for="message" class="form-label">Сообщение</label>
+        <textarea class="form-control" id="message"></textarea>
+    </div>
+    <button type="submit" class="btn btn-gold">Создать заявку</button>
+</form>
+
+<script>
+document.getElementById('tradeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+    const data = {
+        requested_user_id: parseInt(document.getElementById('requestedUserId').value),
+        offered_item_id: parseInt(document.getElementById('offeredItemId').value),
+        requested_item_id: parseInt(document.getElementById('requestedItemId').value),
+        message: document.getElementById('message').value
+    };
+    const response = await fetch('/exchange/trades', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+    });
+    if (response.ok) {
+        alert('Заявка создана');
+        location.reload();
+    } else {
+        alert('Ошибка');
+    }
+});
+
+async function cancelTrade(tradeId) {
+    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+    const response = await fetch(`/exchange/trades/${tradeId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (response.ok) {
+        location.reload();
+    } else {
+        alert('Ошибка');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,229 @@
+:root {
+  --deep-navy: #1a2b3c;
+  --rich-burgundy: #6d2e46;
+  --warm-gold: #c9a96e;
+  --soft-gold: #e8d8b8;
+  --light-cream: #f8f5f0;
+  --dark-charcoal: #2c3e50;
+  --medium-gray: #5d6d7e;
+}
+
+/* Основные стили */
+body {
+  padding-top: 80px;
+  background-color: var(--light-cream);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.main-content {
+  min-height: calc(100vh - 200px);
+}
+
+/* Навигация */
+.bg-collector {
+  background: linear-gradient(135deg, var(--deep-navy) 0%, var(--dark-charcoal) 100%) !important;
+  border-bottom: 3px solid var(--warm-gold);
+}
+
+.nav-collector {
+  color: #fff !important;
+  font-weight: 500;
+  margin: 0 3px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-collector::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(201, 169, 110, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.nav-collector:hover::before,
+.nav-collector.active::before {
+  left: 100%;
+}
+
+.nav-collector:hover,
+.nav-collector.active {
+  background-color: var(--warm-gold) !important;
+  color: var(--deep-navy) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(201, 169, 110, 0.3);
+}
+
+/* Футер */
+.footer-collector {
+  background: linear-gradient(135deg, var(--deep-navy) 0%, var(--dark-charcoal) 100%);
+  border-top: 3px solid var(--warm-gold);
+  color: white;
+  padding: 2rem 0;
+}
+
+.footer-collector p {
+  margin-bottom: 0.5rem;
+}
+
+/* Логотип */
+.logo-hover {
+  transition: all 0.3s ease;
+}
+
+.logo-hover:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+/* Дополнительные компоненты */
+.card-collector {
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.card-collector:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.card-collector .card-header {
+  background: var(--deep-navy);
+  color: white;
+  border-bottom: 2px solid var(--warm-gold);
+  font-weight: 600;
+}
+
+.btn-gold {
+  background-color: var(--warm-gold);
+  color: var(--deep-navy);
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+  background-color: var(--rich-burgundy);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(109, 46, 70, 0.3);
+}
+
+.btn-outline-gold {
+  background-color: transparent;
+  color: var(--warm-gold);
+  border: 2px solid var(--warm-gold);
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-gold:hover {
+  background-color: var(--warm-gold);
+  color: var(--deep-navy);
+  transform: translateY(-2px);
+}
+
+.text-gold {
+  color: var(--warm-gold) !important;
+}
+
+.text-burgundy {
+  color: var(--rich-burgundy) !important;
+}
+
+.bg-cream {
+  background-color: var(--light-cream) !important;
+}
+
+.border-gold {
+  border-color: var(--warm-gold) !important;
+}
+
+.border-burgundy {
+  border-color: var(--rich-burgundy) !important;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--deep-navy);
+  font-weight: 600;
+}
+
+h1 {
+  border-bottom: 2px solid var(--warm-gold);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+/* Таблицы */
+.table-collector {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.table-collector thead {
+  background: var(--deep-navy);
+  color: white;
+}
+
+.table-collector th {
+  border: none;
+  padding: 15px;
+  font-weight: 600;
+}
+
+.table-collector td {
+  padding: 15px;
+  border-color: #eee;
+}
+
+.table-collector tbody tr:hover {
+  background-color: rgba(201, 169, 110, 0.1);
+}
+
+/* Формы */
+.form-control:focus {
+  border-color: var(--warm-gold);
+  box-shadow: 0 0 0 0.2rem rgba(201, 169, 110, 0.25);
+}
+
+/* Badges */
+.badge-gold {
+  background-color: var(--warm-gold);
+  color: var(--deep-navy);
+}
+
+.badge-burgundy {
+  background-color: var(--rich-burgundy);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 70px;
+  }
+
+  .nav-collector {
+    margin: 2px 0;
+    text-align: center;
+  }
+
+  .navbar-brand {
+    margin-right: 0;
+  }
+}
