@@ -9,7 +9,7 @@ from dependencies import get_current_user_id_optional
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
-# --- Вспомогательная функция для получения предмета с проверкой прав ---
+#Вспомогательная функция для получения предмета с проверкой прав
 def get_item(db: Session, item_id: int, user_id: Optional[int] = None):
     item = db.query(models.CollectibleItem).options(
         joinedload(models.CollectibleItem.category),
@@ -234,7 +234,7 @@ def list_items(
     country_id: Optional[int] = None,
     year: Optional[int] = None,
     is_on_main: Optional[bool] = None,
-    author_id: Optional[int] = None,        # ← фильтр по автору
+    author_id: Optional[int] = None,        # фильтр по автору
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
@@ -259,12 +259,11 @@ def list_items(
 
     # Права доступа: показываем опубликованные всегда, а неопубликованные — только если текущий пользователь является автором
     if user_id:
-        # Если передан author_id и он равен user_id, показываем и неопубликованные автора
         if author_id is not None and author_id == user_id:
-            # показываем всё, что принадлежит этому автору (включая неопубликованные)
+            # показываем всё, что принадлежит этому автору
             pass
         else:
-            # иначе только опубликованные или свои неопубликованные (если автор совпадает)
+            # иначе только опубликованные или свои неопубликованные
             query = query.filter(
                 or_(
                     models.CollectibleItem.is_published == True,
@@ -359,8 +358,8 @@ def update_item(
     if db_item.author_id != user_id:
         raise HTTPException(403, "Not enough permissions")
 
-    # Обновляем поля (используем только те, что есть в модели)
-    data = item.model_dump(exclude={"type"})  # исключаем type, чтобы не было конфликта
+    # Обновляем поля
+    data = item.model_dump(exclude={"type"})  # исключаем type
     for key, value in data.items():
         if hasattr(db_item, key):
             setattr(db_item, key, value)

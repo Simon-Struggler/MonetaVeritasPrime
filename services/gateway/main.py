@@ -81,7 +81,6 @@ def custom_openapi():
         }
     }
     # Для всех эндпоинтов (включая проксируемые) указываем, что требуется авторизация
-    # Но это только для документации, реальная проверка происходит в сервисах
     for path in openapi_schema["paths"]:
         if path != "/health":
             for method in openapi_schema["paths"][path]:
