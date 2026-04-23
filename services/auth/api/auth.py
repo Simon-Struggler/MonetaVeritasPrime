@@ -8,6 +8,10 @@ from dependencies import get_db, create_access_token, get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+@router.get("/health")
+def health():
+    return {"status": "ok"}
+
 @router.post("/register", response_model=schemas.UserResponse)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter(models.User.username == user.username).first():

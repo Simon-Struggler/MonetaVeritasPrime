@@ -9,6 +9,10 @@ from dependencies import get_current_user_id_optional
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
+@router.get("/health")
+def health():
+    return {"status": "ok"}
+
 #Вспомогательная функция для получения предмета с проверкой прав
 def get_item(db: Session, item_id: int, user_id: Optional[int] = None):
     item = db.query(models.CollectibleItem).options(

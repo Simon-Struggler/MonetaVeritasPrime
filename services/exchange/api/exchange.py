@@ -11,6 +11,9 @@ from config import settings
 
 router = APIRouter(prefix="/exchange", tags=["exchange"])
 
+@router.get("/health")
+def health():
+    return {"status": "ok"}
 
 async def fetch_item(item_id: int):
     async with httpx.AsyncClient() as client:

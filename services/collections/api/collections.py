@@ -10,6 +10,10 @@ from config import settings
 
 router = APIRouter(prefix="/collections", tags=["collections"])
 
+@router.get("/health")
+def health():
+    return {"status": "ok"}
+
 @router.get("/", response_model=List[schemas.CollectionItemResponse])
 async def get_my_collection(
     skip: int = 0,

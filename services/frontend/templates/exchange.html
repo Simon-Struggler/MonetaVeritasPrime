@@ -1,11 +1,42 @@
 {% extends "base.html" %}
-
 {% block title %}Обмен{% endblock %}
 
 {% block content %}
-<h1>Обмен предметами</h1>
+<h1 class="page-title"><i class="bi bi-arrow-left-right me-2"></i>Обмен</h1>
 
-<h2>Мои заявки</h2>
+<div class="card card-collector p-4 mb-5">
+    <h5 class="fw-bold mb-3">Создать заявку на обмен</h5>
+    <form id="tradeForm" class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">Что вы предлагаете</label>
+            <select class="form-select" id="offeredItemId" required>
+                <option value="">— Выберите предмет —</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">Что хотите получить</label>
+            <select class="form-select" id="requestedItemId" required>
+                <option value="">— Выберите предмет —</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">Кому предложить (ID пользователя)</label>
+            <input type="number" class="form-control" id="requestedUserId" placeholder="ID коллекционера" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold">Сообщение</label>
+            <input type="text" class="form-control" id="message" placeholder="Введите сообщение (необязательно)">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-gold">
+                <i class="bi bi-send me-1"></i>Отправить запрос
+            </button>
+        </div>
+    </form>
+</div>
+
+<h2 class="section-title"><i class="bi bi-list-ul"></i> Мои заявки</h2>
+{% if trades %}
 <div class="table-responsive">
     <table class="table table-collector">
         <thead>
@@ -14,19 +45,29 @@
                 <th>Предлагаю</th>
                 <th>Запрашиваю</th>
                 <th>Статус</th>
-                <th>Действия</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for trade in trades %}
             <tr>
-                <td>{{ trade.id }}</td>
+                <td class="fw-bold">#{{ trade.id }}</td>
                 <td>{{ trade.offered_item.name }}</td>
                 <td>{{ trade.requested_item.name }}</td>
-                <td>{{ trade.status }}</td>
                 <td>
                     {% if trade.status == 'pending' %}
-                        <button class="btn btn-outline-gold" onclick="cancelTrade({{ trade.id }})">Отменить</button>
+                        <span class="badge bg-warning text-dark">Ожидает</span>
+                    {% elif trade.status == 'accepted' %}
+                        <span class="badge bg-success">Принято</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ trade.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    {% if trade.status == 'pending' %}
+                        <button type="button" class="btn btn-outline-danger btn-sm js-cancel-trade" data-trade-id="{{ trade.id }}">
+                            <i class="bi bi-x-circle me-1"></i>Отменить
+                        </button>
                     {% endif %}
                 </td>
             </tr>
@@ -34,29 +75,39 @@
         </tbody>
     </table>
 </div>
-
-<h2>Создать заявку</h2>
-<form id="tradeForm">
-    <div class="mb-3">
-        <label for="requestedUserId" class="form-label">ID пользователя</label>
-        <input type="number" class="form-control" id="requestedUserId" required>
-    </div>
-    <div class="mb-3">
-        <label for="offeredItemId" class="form-label">ID предлагаемого предмета</label>
-        <input type="number" class="form-control" id="offeredItemId" required>
-    </div>
-    <div class="mb-3">
-        <label for="requestedItemId" class="form-label">ID запрашиваемого предмета</label>
-        <input type="number" class="form-control" id="requestedItemId" required>
-    </div>
-    <div class="mb-3">
-        <label for="message" class="form-label">Сообщение</label>
-        <textarea class="form-control" id="message"></textarea>
-    </div>
-    <button type="submit" class="btn btn-gold">Создать заявку</button>
-</form>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-envelope"></i>
+    <p class="text-muted">У вас пока нет активных заявок на обмен</p>
+</div>
+{% endif %}
 
 <script>
+// Загрузка доступных предметов из коллекции пользователя (для выбора)
+async function loadMyCollection() {
+    try {
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+        const resp = await fetch('/collections', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.ok) {
+            const collection = await resp.json();
+            const offeredSelect = document.getElementById('offeredItemId');
+            const requestedSelect = document.getElementById('requestedItemId');
+            collection.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.item.id;
+                option.textContent = `${item.item.name} (${item.item.type})`;
+                offeredSelect.appendChild(option.cloneNode(true));
+                requestedSelect.appendChild(option.cloneNode(true));
+            });
+        }
+    } catch (e) {
+        console.error('Не удалось загрузить коллекцию');
+    }
+}
+loadMyCollection();
+
 document.getElementById('tradeForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
@@ -66,35 +117,61 @@ document.getElementById('tradeForm').addEventListener('submit', async (e) => {
         requested_item_id: parseInt(document.getElementById('requestedItemId').value),
         message: document.getElementById('message').value
     };
-    const response = await fetch('/exchange/trades', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-    });
-    if (response.ok) {
-        alert('Заявка создана');
-        location.reload();
-    } else {
-        alert('Ошибка');
+    try {
+        const resp = await fetch('/exchange/trades', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (resp.ok) {
+            showToast('Заявка создана!', 'success');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            const err = await resp.json();
+            showToast(err.detail || 'Ошибка создания', 'danger');
+        }
+    } catch {
+        showToast('Ошибка соединения', 'danger');
     }
 });
 
 async function cancelTrade(tradeId) {
+    if (!confirm('Отменить эту заявку?')) return;
     const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-    const response = await fetch(`/exchange/trades/${tradeId}`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${token}`
+    try {
+        const resp = await fetch(`/exchange/trades/${tradeId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.ok) {
+            showToast('Заявка отменена', 'info');
+            setTimeout(() => location.reload(), 600);
+        } else {
+            showToast('Ошибка', 'danger');
         }
-    });
-    if (response.ok) {
-        location.reload();
-    } else {
-        alert('Ошибка');
+    } catch {
+        showToast('Ошибка соединения', 'danger');
     }
+}
+
+document.querySelectorAll('.js-cancel-trade').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const tradeId = btn.dataset.tradeId;
+        if (!tradeId) return;
+        await cancelTrade(tradeId);
+    });
+});
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification alert alert-${type} position-fixed bottom-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
 }
 </script>
 {% endblock %}

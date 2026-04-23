@@ -1,38 +1,102 @@
 {% extends "base.html" %}
-
-{% block title %}Коллекция{% endblock %}
+{% block title %}Моя коллекция{% endblock %}
 
 {% block content %}
-<h1>Моя коллекция</h1>
+<h1 class="page-title"><i class="bi bi-folder2-open me-2"></i>Моя коллекция</h1>
 
+{% if collection %}
+<p class="text-muted mb-4">{{ collection|length }} предметов</p>
 <div class="row">
     {% for item in collection %}
-    <div class="col-md-4 mb-4">
-        <div class="card card-collector">
+    <div class="col-6 col-md-4 mb-4">
+        <div class="card card-collector h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="text-truncate me-2">{{ item.item.name }}</span>
+                {% if item.item.type == 'coin' %}
+                    <i class="bi bi-coin flex-shrink-0" style="color: #fbbf24;"></i>
+                {% else %}
+                    <i class="bi bi-cash flex-shrink-0" style="color: #22c55e;"></i>
+                {% endif %}
+            </div>
             <div class="card-body">
-                <h5 class="card-title">{{ item.item.name }}</h5>
-                <p class="card-text">Тип: {{ item.item.type }}</p>
-                <button class="btn btn-outline-gold" onclick="removeFromCollection({{ item.id }})">Удалить</button>
+                <span class="badge-collector mb-2">{{ item.item.type }}</span>
+                <p class="card-text text-muted small flex-grow-1">{{ item.item.description or 'Нет описания' }}</p>
+                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ item.created_at or 'неизвестно' }}</small>
+            </div>
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm w-100 js-remove-from-collection" data-collection-id="{{ item.id }}">
+                    <i class="bi bi-trash me-1"></i>Удалить
+                </button>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-box"></i>
+    <h5 class="fw-bold">Коллекция пуста</h5>
+    <p class="text-muted">Добавьте предметы из <a href="/catalog" class="fw-bold text-decoration-none" style="color: #b8860b;">каталога</a>, чтобы они появились здесь.</p>
+</div>
+{% endif %}
 
 <script>
-async function removeFromCollection(collectionId) {
-    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-    const response = await fetch(`/collections/${collectionId}`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${token}`
+async function removeFromCollection(collectionId, btn) {
+    if (!confirm('Удалить этот предмет из коллекции?')) return;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    try {
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+        const resp = await fetch(`/collections/${collectionId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.ok) {
+            showToast('Удалено', 'success');
+            setTimeout(() => location.reload(), 600);
+        } else {
+            showToast('Ошибка удаления', 'danger');
+        }
+    } catch {
+        showToast('Ошибка соединения', 'danger');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+document.querySelectorAll('.js-remove-from-collection').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const collectionId = btn.dataset.collectionId;
+        if (!collectionId) return;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        try {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+            const resp = await fetch(`/collections/${collectionId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (resp.ok) {
+                showToast('Удалено', 'success');
+                setTimeout(() => location.reload(), 600);
+            } else {
+                showToast('Ошибка удаления', 'danger');
+            }
+        } catch {
+            showToast('Ошибка соединения', 'danger');
+        } finally {
+            btn.disabled = false;
         }
     });
-    if (response.ok) {
-        location.reload();
-    } else {
-        alert('Ошибка');
-    }
+});
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification alert alert-${type} position-fixed bottom-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
 }
 </script>
 {% endblock %}

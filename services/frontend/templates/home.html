@@ -1,51 +1,70 @@
 {% extends "base.html" %}
-
 {% block title %}Главная{% endblock %}
-
 {% block content %}
-<div class="text-center py-5">
-    <h1 class="display-4 text-gold">Добро пожаловать в MonetaVeritas</h1>
-    <p class="lead">Ваш надежный помощник в мире коллекционирования монет и банкнот</p>
-    <button class="btn btn-gold btn-lg" onclick="openLoginModal()">Начать</button>
-</div>
 
-<div class="row mt-5">
-    <div class="col-md-4">
-        <div class="card card-collector">
-            <div class="card-header">Каталог</div>
-            <div class="card-body">
-                <p>Просматривайте и добавляйте предметы в каталог.</p>
-                <a href="/catalog" class="btn btn-outline-gold">Перейти</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-collector">
-            <div class="card-header">Коллекция</div>
-            <div class="card-body">
-                <p>Управляйте своей коллекцией предметов.</p>
-                <a href="/collections" class="btn btn-outline-gold">Перейти</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-collector">
-            <div class="card-header">Обмен</div>
-            <div class="card-body">
-                <p>Обменивайтесь предметами с другими коллекционерами.</p>
-                <a href="/exchange" class="btn btn-outline-gold">Перейти</a>
-            </div>
-        </div>
+<div class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">MonetaVeritas</h1>
+        <p class="hero-subtitle">Ваш персональный каталог редких монет и банкнот. Коллекционируйте, обменивайтесь и открывайте новое.</p>
+        
+        {% if not username %}
+            <button class="btn btn-gold btn-lg me-3" onclick="openAuth('login')">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+            </button>
+            <button class="btn btn-outline-gold btn-lg" onclick="openAuth('register')">
+                <i class="bi bi-person-plus me-2"></i>Регистрация
+            </button>
+        {% endif %}
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card card-collector border-gold p-4">
-            <h3 class="text-gold">Нет аккаунта?</h3>
-            <p>Зарегистрируйтесь прямо сейчас, чтобы начать коллекционировать и обмениваться предметами.</p>
-            <button class="btn btn-outline-gold" onclick="openRegisterModal()">Зарегистрироваться</button>
+<div class="row mt-5 g-4">
+    <div class="col-md-4">
+        <div class="card card-collector text-center">
+            <div class="card-body">
+                <div class="card-icon mx-auto">
+                    <i class="bi bi-book" style="color: #b8860b;"></i>
+                </div>
+                <h5 class="fw-bold">Каталог</h5>
+                <p class="text-muted small">Исследуйте обширную базу монет и банкнот, добавляйте новые экземпляры.</p>
+                <a href="/catalog" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-collector text-center">
+            <div class="card-body">
+                <div class="card-icon mx-auto">
+                    <i class="bi bi-folder2-open" style="color: #b8860b;"></i>
+                </div>
+                <h5 class="fw-bold">Моя коллекция</h5>
+                <p class="text-muted small">Управляйте своими предметами, следите за пополнением.</p>
+                <a href="/collections" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-collector text-center">
+            <div class="card-body">
+                <div class="card-icon mx-auto">
+                    <i class="bi bi-arrow-left-right" style="color: #b8860b;"></i>
+                </div>
+                <h5 class="fw-bold">Обмен</h5>
+                <p class="text-muted small">Обменивайтесь дубликатами с другими коллекционерами.</p>
+                <a href="/exchange" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
+            </div>
         </div>
     </div>
 </div>
+
+{% if not username %}
+<div class="mt-5 text-center">
+    <div class="card card-collector d-inline-block p-4" style="max-width: 500px;">
+        <h4 class="fw-bold text-dark">Начните своё путешествие</h4>
+        <p class="text-muted">Присоединяйтесь к сообществу коллекционеров уже сегодня.</p>
+        <button class="btn btn-gold" onclick="openAuth('register')">Создать аккаунт</button>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

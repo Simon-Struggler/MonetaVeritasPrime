@@ -1,41 +1,153 @@
 {% extends "base.html" %}
-
 {% block title %}Каталог{% endblock %}
 
 {% block content %}
-<h1>Каталог предметов</h1>
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <h1 class="page-title">Каталог</h1>
+    <div class="btn-group">
+        <button type="button" class="btn btn-gold btn-sm" onclick="openAddItemModal('coin')">
+            <i class="bi bi-plus-circle me-1"></i>Монету
+        </button>
+        <button type="button" class="btn btn-gold btn-sm" onclick="openAddItemModal('banknote')">
+            <i class="bi bi-plus-circle me-1"></i>Банкноту
+        </button>
+    </div>
+</div>
 
-<div class="row">
-    {% for item in items %}
-    <div class="col-md-4 mb-4">
-        <div class="card card-collector">
-            <div class="card-body">
-                <h5 class="card-title">{{ item.name }}</h5>
-                <p class="card-text">Тип: {{ item.type }}</p>
-                <p class="card-text">Автор: {{ item.author_id }}</p>
-                <button class="btn btn-outline-gold" onclick="addToCollection({{ item.id }})">Добавить в коллекцию</button>
+<div class="search-box">
+    <i class="bi bi-search"></i>
+    <input type="text" id="itemSearch" class="form-control" placeholder="Поиск по названию или описанию..." oninput="filterItems()">
+</div>
+
+<h2 class="section-title"><i class="bi bi-coin"></i> Монеты</h2>
+<div class="row" id="coinsGrid">
+    {% if coins %}
+        {% for coin in coins %}
+        <div class="col-6 col-md-4 mb-4 item-card" data-type="coin" data-search="{{ coin.name }} {{ coin.description }}">
+            <div class="card card-collector h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span class="text-truncate me-2">{{ coin.name }}</span>
+                    <i class="bi bi-coin flex-shrink-0" style="color: #fbbf24;"></i>
+                </div>
+                <div class="card-body">
+                    {% if coin.denomination %}
+                    <span class="badge-collector">{{ coin.denomination }} {{ coin.currency or 'RUB' }}</span>
+                    {% endif %}
+                    <p class="card-text text-muted small flex-grow-1 mb-2">{{ coin.description or 'Описание отсутствует' }}</p>
+                    <small class="text-muted d-block"><i class="bi bi-person me-1"></i>{{ coin.author_id }}</small>
+                </div>
+                <div class="card-footer text-center">
+                      <button type="button" class="btn btn-outline-gold btn-sm w-100 js-add-to-collection" data-item-id="{{ coin.id }}">
+                        <i class="bi bi-plus-lg me-1"></i>В коллекцию
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-    {% endfor %}
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-coin"></i>
+                <p class="text-muted">Монеты пока не добавлены</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<h2 class="section-title"><i class="bi bi-cash-stack"></i> Банкноты</h2>
+<div class="row" id="banknotesGrid">
+    {% if banknotes %}
+        {% for banknote in banknotes %}
+        <div class="col-6 col-md-4 mb-4 item-card" data-type="banknote" data-search="{{ banknote.name }} {{ banknote.description }}">
+            <div class="card card-collector h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span class="text-truncate me-2">{{ banknote.name }}</span>
+                    <i class="bi bi-cash flex-shrink-0" style="color: #22c55e;"></i>
+                </div>
+                <div class="card-body">
+                    {% if banknote.denomination %}
+                    <span class="badge-collector">{{ banknote.denomination }} {{ banknote.currency or 'RUB' }}</span>
+                    {% endif %}
+                    <p class="card-text text-muted small flex-grow-1 mb-2">{{ banknote.description or 'Описание отсутствует' }}</p>
+                    <small class="text-muted d-block"><i class="bi bi-person me-1"></i>{{ banknote.author_id }}</small>
+                </div>
+                <div class="card-footer text-center">
+                      <button type="button" class="btn btn-outline-gold btn-sm w-100 js-add-to-collection" data-item-id="{{ banknote.id }}">
+                        <i class="bi bi-plus-lg me-1"></i>В коллекцию
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-cash-stack"></i>
+                <p class="text-muted">Банкноты пока не добавлены</p>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 <script>
-async function addToCollection(itemId) {
-    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-    const response = await fetch('/collections', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ item_id: itemId })
+function filterItems() {
+    const query = document.getElementById('itemSearch').value.toLowerCase();
+    document.querySelectorAll('.item-card').forEach(card => {
+        const text = card.dataset.search.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
     });
-    if (response.ok) {
-        alert('Добавлено в коллекцию');
-    } else {
-        alert('Ошибка');
+}
+
+async function addToCollection(itemId, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Добавление...';
+    
+    try {
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+        const response = await fetch('/collections', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ item_id: parseInt(itemId) })
+        });
+        if (response.ok) {
+            showToast('Добавлено в коллекцию!', 'success');
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Добавлено';
+            btn.classList.remove('btn-outline-gold');
+            btn.classList.add('btn-success');
+        } else {
+            const err = await response.json();
+            showToast(err.detail || 'Ошибка', 'danger');
+        }
+    } catch {
+        showToast('Ошибка соединения', 'danger');
+    } finally {
+        btn.disabled = false;
     }
+}
+
+document.querySelectorAll('.js-add-to-collection').forEach(button => {
+    button.addEventListener('click', () => {
+        const itemId = button.dataset.itemId;
+        if (!itemId) return;
+        addToCollection(itemId, button);
+    });
+});
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification alert alert-${type} position-fixed bottom-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+function openAddItemModal(type) {
+    // Заглушка, можно открыть модалку
+    showToast(`Функция добавления ${type === 'coin' ? 'монеты' : 'банкноты'} появится скоро`, 'info');
 }
 </script>
 {% endblock %}

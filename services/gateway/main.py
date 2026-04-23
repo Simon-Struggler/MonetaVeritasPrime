@@ -24,12 +24,13 @@ SERVICE_MAP = {
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def gateway(request: Request, path: str):
     # Определяем целевой сервис
+    target_url = None
     for prefix, url in SERVICE_MAP.items():
         if path.startswith(prefix + "/"):
-            target_path = path[len(prefix) + 1:]
-            target_url = f"{url}/{target_path}"
+            target_url = f"{url}/{path}"
             break
-    else:
+    
+    if not target_url:
         raise HTTPException(404, "Not found")
 
     # Формируем заголовки: берём только необходимые, преобразуем в строки

@@ -12,11 +12,13 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse(request, "home.html", {"request": request})
+    username = get_username(request)
+    return templates.TemplateResponse(request, "home.html", {"request": request, "username": username})
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse(request, "login.html", {"request": request})
+    username = get_username(request)
+    return templates.TemplateResponse(request, "login.html", {"request": request, "username": username})
 
 async def parse_auth_body(request: Request):
     content_type = request.headers.get("content-type", "")
@@ -75,29 +77,59 @@ def get_token(request: Request):
         raise HTTPException(401, "Not authenticated")
     return token
 
+def get_username(request: Request):
+    token = request.cookies.get("token")
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return payload.get("sub")
+    except jwt.JWTError:
+        return None
+
 @app.get("/catalog", response_class=HTMLResponse)
 async def catalog(request: Request, token: str = Depends(get_token)):
     headers = {"Authorization": f"Bearer {token}"}
     async with httpx.AsyncClient() as client:
-        resp = await client.get(f"{settings.GATEWAY_URL}/catalog/items", headers=headers)
-        items = resp.json() if resp.status_code == 200 else []
-    return templates.TemplateResponse(request, "catalog.html", {"request": request, "items": items})
+        try:
+            resp = await client.get(f"{settings.GATEWAY_URL}/catalog/items", headers=headers, timeout=10.0)
+            if resp.status_code == 200:
+                items = resp.json()
+            else:
+                items = []
+        except Exception as e:
+            print(f"Error fetching items: {e}")
+            items = []
+    coins = [item for item in items if item.get('type') == 'coin']
+    banknotes = [item for item in items if item.get('type') == 'banknote']
+    username = get_username(request)
+    return templates.TemplateResponse(request, "catalog.html", {"request": request, "coins": coins, "banknotes": banknotes, "username": username})
 
 @app.get("/collections", response_class=HTMLResponse)
 async def collections(request: Request, token: str = Depends(get_token)):
     headers = {"Authorization": f"Bearer {token}"}
     async with httpx.AsyncClient() as client:
-        resp = await client.get(f"{settings.GATEWAY_URL}/collections", headers=headers)
-        collection = resp.json() if resp.status_code == 200 else []
-    return templates.TemplateResponse(request, "collections.html", {"request": request, "collection": collection})
+        try:
+            resp = await client.get(f"{settings.GATEWAY_URL}/collections", headers=headers, timeout=10.0)
+            collection = resp.json() if resp.status_code == 200 else []
+        except Exception as e:
+            print(f"Error fetching collections: {e}")
+            collection = []
+    username = get_username(request)
+    return templates.TemplateResponse(request, "collections.html", {"request": request, "collection": collection, "username": username})
 
 @app.get("/exchange", response_class=HTMLResponse)
 async def exchange_page(request: Request, token: str = Depends(get_token)):
     headers = {"Authorization": f"Bearer {token}"}
     async with httpx.AsyncClient() as client:
-        resp = await client.get(f"{settings.GATEWAY_URL}/exchange/trades", headers=headers)
-        trades = resp.json() if resp.status_code == 200 else []
-    return templates.TemplateResponse(request, "exchange.html", {"request": request, "trades": trades})
+        try:
+            resp = await client.get(f"{settings.GATEWAY_URL}/exchange/trades", headers=headers, timeout=10.0)
+            trades = resp.json() if resp.status_code == 200 else []
+        except Exception as e:
+            print(f"Error fetching trades: {e}")
+            trades = []
+    username = get_username(request)
+    return templates.TemplateResponse(request, "exchange.html", {"request": request, "trades": trades, "username": username})
 
 @app.get("/health")
 def health():

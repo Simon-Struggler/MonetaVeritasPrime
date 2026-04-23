@@ -1,24 +1,25 @@
 Терминал 1 (Auth)
 
+pkill -f uvicorn
 cd services
 
 bash
-cd auth
+cd /workspaces/MonetaVeritasPrime/services/auth
 uvicorn main:app --reload --port 8001
 Терминал 2 (Catalog)
 
 bash
-cd catalog
+cd /workspaces/MonetaVeritasPrime/services/catalog
 uvicorn main:app --reload --port 8002
 Терминал 3 (Collections)
 
 bash
-cd collections
+cd /workspaces/MonetaVeritasPrime/services/collections
 uvicorn main:app --reload --port 8003
 Терминал 4 (Gateway)
 
 bash
-cd gateway
+cd /workspaces/MonetaVeritasPrime/services/gateway
 uvicorn main:app --reload --port 8000
 
 Терминал 5
@@ -54,7 +55,7 @@ json
 text
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMiIsInVzZXJfaWQiOjIsImV4cCI6MTc3NDM4NzkyNX0.s_OID2byqTELWdcmVs0_6EolFkvr5NXMyUu5D6GVtkk
 2. Установите глобальную авторизацию
-В правом верхнем углу страницы Swagger UI найдите кнопку Authorize (🔒).
+В правом верхнем углу страницы Swagger UI найдите кнопку Authorize.
 
 Нажмите на неё.
 
@@ -87,7 +88,7 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMiIsInVzZXJfaWQiOjIs
 
 Вы должны получить ответ: {"title":"Россия","id":1}.
 
-Если ответ пришёл – всё работает. Если вы получили ошибку 401 (Unauthorized), значит токен не передан или истёк. Получите новый токен через /auth/login и повторите авторизацию.
+Если ответ пришел - все работает. Если вы получили ошибку 401 (Unauthorized), значит токен не передан или истек. Получите новый токен через /auth/login и повторите авторизацию.
 
 5. Что делать, если Swagger UI через Gateway не показывает эндпоинты?
 Убедитесь, что все сервисы запущены и Gateway работает. Если эндпоинты не отображаются, попробуйте открыть Swagger UI напрямую у Catalog Service: http://localhost:8002/docs. Там вы также сможете выполнять запросы (только с портом 8002). Но в этом случае вы будете обращаться не через Gateway, а напрямую. Токен также нужно передавать через кнопку Authorize.
@@ -112,4 +113,4 @@ json
 {"item_id": 1}
 через POST /collections/ (в разделе collections).
 
-Теперь всё должно работать. Swagger UI – самый удобный способ тестирования API.
+Теперь все должно работать. Swagger UI - самый удобный способ тестирования API.
