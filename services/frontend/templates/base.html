@@ -6,7 +6,7 @@
     <title>{% block title %}MonetaVeritas{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}?v=1.1">
     <style>
         .navbar-brand {
             font-weight: 800;
@@ -26,7 +26,7 @@
     </style>
 </head>
 <body data-user-authenticated="{{ 'true' if username else 'false' }}">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-collector fixed-top">
+    <nav class="navbar navbar-expand-lg bg-collector">
         <div class="container">
             <a class="navbar-brand" href="/">MonetaVeritas</a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -36,7 +36,7 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link nav-collector {% if request.url.path == '/catalog' %}active{% endif %}"
-                           href="#" data-auth-required="true" data-url="/catalog">
+                           href="/catalog">
                             <i class="bi bi-book"></i> Каталог
                         </a>
                     </li>
@@ -143,6 +143,25 @@
         const bodyElement = document.body;
         const isAuthenticated = bodyElement.getAttribute('data-user-authenticated') === 'true';
 
+        // Обработчик для ссылок, требующих авторизации
+        document.querySelectorAll('a[data-auth-required="true"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!isAuthenticated) {
+                    openAuth('login', this.getAttribute('data-url'));
+                } else {
+                    window.location.href = this.getAttribute('data-url');
+                }
+            });
+        });
+
+        // Если страница требует авторизации, но пользователь не авторизован, показать модальное окно
+        const currentPath = window.location.pathname;
+        const protectedPaths = ['/collections', '/exchange'];
+        if (protectedPaths.includes(currentPath) && !isAuthenticated) {
+            openAuth('login', currentPath);
+        }
+
         const authModal = new bootstrap.Modal(document.getElementById('authModal'));
         let pendingRedirect = null;
 
@@ -202,6 +221,7 @@
                     return;
                 }
                 showAlert('Вход выполнен!', 'success');
+                authModal.hide();
                 setTimeout(() => {
                     if (pendingRedirect) {
                         window.location.href = pendingRedirect;
@@ -239,21 +259,19 @@
                 showAlert('Ошибка соединения', 'danger');
             }
         }
-
-        // Обработка кликов по пунктам меню, требующим авторизации
-        document.querySelectorAll('[data-auth-required="true"]').forEach(link => {
-            link.addEventListener('click', (e) => {
-                const targetUrl = link.getAttribute('data-url');
-                if (isAuthenticated) {
-                    if (targetUrl && targetUrl !== '#') {
-                        window.location.href = targetUrl;
-                    }
-                } else {
-                    e.preventDefault();
+        // Обработчик для ссылок, требующих авторизации
+        document.querySelectorAll('[data-auth-required="true"]').forEach(el => {
+            el.addEventListener('click', function(e) {
+                e.preventDefault();                     // всегда предотвращаем переход по href
+                const targetUrl = this.getAttribute('data-url');
+                if (!isAuthenticated) {
                     openAuth('login', targetUrl);
+                } else if (targetUrl && targetUrl !== '#') {
+                    window.location.href = targetUrl;
                 }
             });
         });
+
     </script>
     {% block scripts %}{% endblock %}
 </body>

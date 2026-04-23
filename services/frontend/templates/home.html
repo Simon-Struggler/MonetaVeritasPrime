@@ -4,19 +4,7 @@
 
 <div class="hero-section">
     <div class="container">
-        <h1 class="hero-title">MonetaVeritas</h1>
-        <p class="hero-subtitle">Ваш персональный каталог редких монет и банкнот. Коллекционируйте, обменивайтесь и открывайте новое.</p>
-        
-        {% if not username %}
-            <button class="btn btn-gold btn-lg me-3" onclick="openAuth('login')">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Войти
-            </button>
-            <button class="btn btn-outline-gold btn-lg" onclick="openAuth('register')">
-                <i class="bi bi-person-plus me-2"></i>Регистрация
-            </button>
-        {% endif %}
-    </div>
-</div>
+        <h4 class="hero-subtitle">Ваш персональный каталог редких монет и банкнот. Коллекционируйте, обменивайтесь и открывайте новое.</h4>
 
 <div class="row mt-5 g-4">
     <div class="col-md-4">
@@ -39,7 +27,7 @@
                 </div>
                 <h5 class="fw-bold">Моя коллекция</h5>
                 <p class="text-muted small">Управляйте своими предметами, следите за пополнением.</p>
-                <a href="/collections" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
+                <a href="#" data-auth-required="true" data-url="/exchange" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
             </div>
         </div>
     </div>
@@ -51,7 +39,7 @@
                 </div>
                 <h5 class="fw-bold">Обмен</h5>
                 <p class="text-muted small">Обменивайтесь дубликатами с другими коллекционерами.</p>
-                <a href="/exchange" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
+                <a href="#" data-auth-required="true" data-url="/exchange" class="btn btn-outline-gold btn-sm mt-auto">Перейти</a>
             </div>
         </div>
     </div>
