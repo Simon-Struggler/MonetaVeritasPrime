@@ -202,6 +202,27 @@ h1 {
   box-shadow: 0 0 0 0.2rem rgba(201, 169, 110, 0.25);
 }
 
+.modal-content {
+  background: linear-gradient(180deg, #f8f5f0 0%, #fff 100%);
+  border: 2px solid var(--warm-gold);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(201, 169, 110, 0.2);
+}
+
+.modal-body {
+  color: var(--dark-charcoal);
+}
+
+.auth-form button {
+  transition: all 0.25s ease;
+}
+
+#authAlert {
+  border-radius: 8px;
+}
+
 /* Badges */
 .badge-gold {
   background-color: var(--warm-gold);

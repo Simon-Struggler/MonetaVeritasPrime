@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, HTTPException, Depends
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import httpx
@@ -12,24 +12,56 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    return templates.TemplateResponse(request, "home.html", {"request": request})
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
+
+async def parse_auth_body(request: Request):
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        return await request.json()
+    form = await request.form()
+    return dict(form)
 
 @app.post("/login")
-async def login(username: str = Form(...), password: str = Form(...)):
+async def login(request: Request):
+    body = await parse_auth_body(request)
+    username = body.get("username")
+    password = body.get("password")
     async with httpx.AsyncClient() as client:
-        resp = await client.post(f"{settings.GATEWAY_URL}/auth/login", json={"username": username, "password": password})
+        resp = await client.post(
+            f"{settings.GATEWAY_URL}/auth/login",
+            json={"username": username, "password": password},
+        )
+        data = resp.json()
         if resp.status_code == 200:
-            data = resp.json()
             token = data["access_token"]
-            response = RedirectResponse(url="/catalog", status_code=302)
+            if "application/json" in request.headers.get("content-type", ""):
+                response = JSONResponse({"status": "ok"})
+            else:
+                response = RedirectResponse(url="/catalog", status_code=302)
             response.set_cookie(key="token", value=token, httponly=True)
             return response
-        else:
-            raise HTTPException(401, "Invalid credentials")
+        raise HTTPException(resp.status_code, data.get("detail", "Invalid credentials"))
+
+@app.post("/register")
+async def register(request: Request):
+    body = await parse_auth_body(request)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            f"{settings.GATEWAY_URL}/auth/register",
+            json={
+                "username": body.get("username"),
+                "email": body.get("email"),
+                "password": body.get("password"),
+            },
+        )
+        if resp.status_code == 200:
+            return JSONResponse({"status": "ok"})
+        data = resp.json()
+        raise HTTPException(resp.status_code, data.get("detail", "Registration failed"))
 
 @app.get("/logout")
 async def logout():
@@ -49,7 +81,7 @@ async def catalog(request: Request, token: str = Depends(get_token)):
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"{settings.GATEWAY_URL}/catalog/items", headers=headers)
         items = resp.json() if resp.status_code == 200 else []
-    return templates.TemplateResponse("catalog.html", {"request": request, "items": items})
+    return templates.TemplateResponse(request, "catalog.html", {"request": request, "items": items})
 
 @app.get("/collections", response_class=HTMLResponse)
 async def collections(request: Request, token: str = Depends(get_token)):
@@ -57,7 +89,7 @@ async def collections(request: Request, token: str = Depends(get_token)):
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"{settings.GATEWAY_URL}/collections", headers=headers)
         collection = resp.json() if resp.status_code == 200 else []
-    return templates.TemplateResponse("collections.html", {"request": request, "collection": collection})
+    return templates.TemplateResponse(request, "collections.html", {"request": request, "collection": collection})
 
 @app.get("/exchange", response_class=HTMLResponse)
 async def exchange_page(request: Request, token: str = Depends(get_token)):
@@ -65,7 +97,7 @@ async def exchange_page(request: Request, token: str = Depends(get_token)):
     async with httpx.AsyncClient() as client:
         resp = await client.get(f"{settings.GATEWAY_URL}/exchange/trades", headers=headers)
         trades = resp.json() if resp.status_code == 200 else []
-    return templates.TemplateResponse("exchange.html", {"request": request, "trades": trades})
+    return templates.TemplateResponse(request, "exchange.html", {"request": request, "trades": trades})
 
 @app.get("/health")
 def health():

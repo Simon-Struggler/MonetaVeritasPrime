@@ -6,7 +6,7 @@
 <div class="text-center py-5">
     <h1 class="display-4 text-gold">Добро пожаловать в MonetaVeritas</h1>
     <p class="lead">Ваш надежный помощник в мире коллекционирования монет и банкнот</p>
-    <a href="/login" class="btn btn-gold btn-lg">Начать</a>
+    <button class="btn btn-gold btn-lg" onclick="openLoginModal()">Начать</button>
 </div>
 
 <div class="row mt-5">
@@ -35,6 +35,16 @@
                 <p>Обменивайтесь предметами с другими коллекционерами.</p>
                 <a href="/exchange" class="btn btn-outline-gold">Перейти</a>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-collector border-gold p-4">
+            <h3 class="text-gold">Нет аккаунта?</h3>
+            <p>Зарегистрируйтесь прямо сейчас, чтобы начать коллекционировать и обмениваться предметами.</p>
+            <button class="btn btn-outline-gold" onclick="openRegisterModal()">Зарегистрироваться</button>
         </div>
     </div>
 </div>
