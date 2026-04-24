@@ -1,0 +1,4 @@
+How to launch tests
+1. Go to required microservice root (auth|catalog|collections)
+2. input bash command: python -m pytest -v
+Done!
