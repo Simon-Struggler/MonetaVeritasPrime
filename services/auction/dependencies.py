@@ -1,11 +1,12 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
 from config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/auth/login")
-
-def get_current_user_id(token: str = Depends(oauth2_scheme)):
+def get_current_user_id(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(401, "Missing or invalid token")
+    token = auth_header.split(" ")[1]
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("user_id")
