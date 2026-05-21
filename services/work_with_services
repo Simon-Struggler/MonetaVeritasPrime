@@ -100,3 +100,6 @@ json
 через POST /collections/ (в разделе collections).
 
 Теперь всё должно работать. Swagger UI – самый удобный способ тестирования API.
+
+Запуск докера
+docker-compose up --build
