@@ -9,5 +9,5 @@ python-jose[cryptography]
 passlib[bcrypt]
 pytest
 httpx
-bcrypt==3.2.10 #Здесь не уверен, нужно проверять
+bcrypt==3.2.2
 coverage

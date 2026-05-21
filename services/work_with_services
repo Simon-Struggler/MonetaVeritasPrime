@@ -1,19 +1,30 @@
+cd services
+
 Терминал 1 (Auth)
 
 bash
 cd auth
 uvicorn main:app --reload --port 8001
+
 Терминал 2 (Catalog)
 
 bash
 cd catalog
 uvicorn main:app --reload --port 8002
+
 Терминал 3 (Collections)
 
 bash
 cd collections
 uvicorn main:app --reload --port 8003
-Терминал 4 (Gateway)
+
+Терминал 4 (Auction)
+
+bash
+cd auction
+uvicorn main:app --reload --port 8005
+
+Терминал 5 (Gateway)
 
 bash
 cd gateway

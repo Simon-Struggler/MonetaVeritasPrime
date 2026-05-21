@@ -70,6 +70,33 @@ services:
       timeout: 5s
       retries: 3
 
+    auction:
+    build: ./auction
+    container_name: auction_service
+    ports:
+      - "8004:8004"
+    environment:
+      - DATABASE_URL=sqlite:///./auction.db
+      - SECRET_KEY=${SECRET_KEY}
+      - AUTH_SERVICE_URL=http://auth:8001
+    volumes:
+      - ./auction:/app
+      - auction_data:/app/data
+    command: uvicorn main:app --host 0.0.0.0 --port 8004 --reload
+    networks:
+      - microservices_net
+    depends_on:
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  auction_data:   # добавить в конец секции volumes
+
   gateway:
     build: ./gateway
     container_name: api_gateway
