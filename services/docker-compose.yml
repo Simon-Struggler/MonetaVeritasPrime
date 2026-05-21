@@ -70,32 +70,30 @@ services:
       timeout: 5s
       retries: 3
 
-    auction:
+  auction:
     build: ./auction
     container_name: auction_service
     ports:
-      - "8004:8004"
+      - "8005:8005"
     environment:
       - DATABASE_URL=sqlite:///./auction.db
       - SECRET_KEY=${SECRET_KEY}
       - AUTH_SERVICE_URL=http://auth:8001
+      - DOCKER=true
     volumes:
       - ./auction:/app
       - auction_data:/app/data
-    command: uvicorn main:app --host 0.0.0.0 --port 8004 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8005 --reload
     networks:
       - microservices_net
     depends_on:
       auth:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
       interval: 10s
       timeout: 5s
       retries: 3
-
-volumes:
-  auction_data:   # добавить в конец секции volumes
 
   gateway:
     build: ./gateway
@@ -107,6 +105,7 @@ volumes:
       - AUTH_SERVICE_URL=http://auth:8001
       - CATALOG_SERVICE_URL=http://catalog:8002
       - COLLECTIONS_SERVICE_URL=http://collections:8003
+      - AUCTION_SERVICE_URL=http://auction:8005
       - DOCKER=true
     volumes:
       - ./gateway:/app
@@ -117,6 +116,7 @@ volumes:
       - auth
       - catalog
       - collections
+      - auction
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -131,3 +131,4 @@ volumes:
   auth_data:
   catalog_data:
   collections_data:
+  auction_data:
