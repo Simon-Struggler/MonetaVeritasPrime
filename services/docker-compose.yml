@@ -95,6 +95,34 @@ services:
       timeout: 5s
       retries: 3
 
+  trade:
+    build: ./trade
+    container_name: trade_service
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=sqlite:///./trade.db
+      - SECRET_KEY=${SECRET_KEY}
+      - AUTH_SERVICE_URL=http://auth:8001
+      - CATALOG_SERVICE_URL=http://catalog:8002
+      - DOCKER=true
+    volumes:
+      - ./trade:/app
+      - trade_data:/app/data
+    command: uvicorn main:app --host 0.0.0.0 --port 8006 --reload
+    networks:
+      - microservices_net
+    depends_on:
+      auth:
+        condition: service_healthy
+      catalog:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   gateway:
     build: ./gateway
     container_name: api_gateway
@@ -106,6 +134,7 @@ services:
       - CATALOG_SERVICE_URL=http://catalog:8002
       - COLLECTIONS_SERVICE_URL=http://collections:8003
       - AUCTION_SERVICE_URL=http://auction:8005
+      - TRADE_SERVICE_URL=http://trade:8006
       - DOCKER=true
     volumes:
       - ./gateway:/app
@@ -117,6 +146,7 @@ services:
       - catalog
       - collections
       - auction
+      - trade
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -132,3 +162,4 @@ volumes:
   catalog_data:
   collections_data:
   auction_data:
+  trade_data:

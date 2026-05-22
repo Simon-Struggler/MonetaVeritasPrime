@@ -19,6 +19,7 @@ SERVICE_MAP = {
     "catalog": settings.CATALOG_SERVICE_URL,
     "collections": settings.COLLECTIONS_SERVICE_URL,
     "auction": settings.AUCTION_SERVICE_URL,
+    "trade": settings.TRADE_SERVICE_URL,
 }
 
 # === Эндпоинт health должен быть ПЕРВЫМ ===

@@ -24,7 +24,13 @@ bash
 cd auction
 uvicorn main:app --reload --port 8005
 
-Терминал 5 (Gateway)
+Терминал 5 (Trade)
+
+bash
+cd trade
+uvicorn main:app --reload --port 8006
+
+Терминал 6 (Gateway)
 
 bash
 cd gateway

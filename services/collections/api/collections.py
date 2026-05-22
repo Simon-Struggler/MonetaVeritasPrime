@@ -83,6 +83,18 @@ async def add_to_collection(
         "item": item_info
     }
 
+@router.get("/internal/users/{user_id}/items/{item_id}")
+def check_user_owns_item(
+    user_id: int,
+    item_id: int,
+    db: Session = Depends(get_db)
+):
+    exists = db.query(models.UserCollectionItem).filter(
+        models.UserCollectionItem.user_id == user_id,
+        models.UserCollectionItem.item_id == item_id
+    ).first() is not None
+    return {"owns": exists}
+
 @router.delete("/{collection_id}", status_code=204)
 def remove_from_collection(
     collection_id: int,

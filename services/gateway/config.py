@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     COLLECTIONS_SERVICE_URL: str = os.getenv("COLLECTIONS_SERVICE_URL", "http://localhost:8003")
     MEDIA_SERVICE_URL: str = os.getenv("MEDIA_SERVICE_URL", "http://localhost:8004")
     AUCTION_SERVICE_URL: str = os.getenv("AUCTION_SERVICE_URL", "http://localhost:8005")
+    TRADE_SERVICE_URL: str = os.getenv("TRADE_SERVICE_URL", "http://localhost:8006")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change_this_in_production")
     ALGORITHM: str = "HS256"
 
