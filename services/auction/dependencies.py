@@ -4,9 +4,14 @@ from config import settings
 
 def get_current_user_id(request: Request):
     auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
+    if not auth_header:
         raise HTTPException(401, "Invalid token")
-    token = auth_header.split(" ")[1]
+
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(401, "Invalid token")
+
+    token = parts[1]
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("user_id")

@@ -1,6 +1,6 @@
-from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field
 
 class LotBase(BaseModel):
     item_id: int
@@ -12,10 +12,13 @@ class LotCreate(LotBase):
 
 class LotResponse(LotBase):
     id: int
+    lot_id: int
     seller_id: int
     current_price: float
     start_time: datetime
     is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 class BidCreate(BaseModel):
     lot_id: int
@@ -27,3 +30,5 @@ class BidResponse(BaseModel):
     bidder_id: int
     amount: float
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

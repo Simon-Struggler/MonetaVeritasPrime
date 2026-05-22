@@ -86,7 +86,7 @@ def custom_openapi():
         }
     }
     for path in openapi_schema["paths"]:
-        if path != "/health":
+        if path not in ["/health", "/auth/login", "/auth/register"]:
             for method in openapi_schema["paths"][path]:
                 openapi_schema["paths"][path][method]["security"] = [
                     {"BearerAuth": []}

@@ -13,6 +13,10 @@ class Lot(Base):
     end_time = Column(DateTime(timezone=True), nullable=False)
     is_active = Column(Boolean, default=True)
 
+    @property
+    def lot_id(self) -> int:
+        return self.id
+
 class Bid(Base):
     __tablename__ = "bids"
     id = Column(Integer, primary_key=True, index=True)
