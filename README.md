@@ -75,7 +75,7 @@ SECRET_KEY=ваш_супер_секретный_ключ_для_jwt
 AUTH_SERVICE_URL=http://localhost:8001
 ```
 
-**Для `collections/.env`:**
+**Для `trade/.env`:**
 ```env
 DATABASE_URL=sqlite:///./trade.db
 SECRET_KEY=ваш_супер_секретный_ключ_для_jwt
@@ -116,7 +116,7 @@ cd trade
 uvicorn main:app --reload --port 8006
 ```
 
-**Терминал 4 (Gateway - Порт 8000)**
+**Терминал 6 (Gateway - Порт 8000)**
 ```bash
 cd gateway
 uvicorn main:app --reload --port 8000
@@ -189,7 +189,7 @@ coverage report -m / coverage html
 
 **Пошаговый сценарий:**
 1. **Получите токен:** Перейдите в `POST /auth/login` -> *Try it out* -> Введите `{"username": "user2", "password": "123"}` -> *Execute*. Скопируйте полученный `access_token`.
-2. **Авторизуйтесь:** Нажмите кнопку **Authorize** (🔒) в правом верхнем углу. Введите токен в формате: `Bearer <ваш_токен>` и нажмите Confirm.
+2. **Авторизуйтесь:** Нажмите кнопку **Authorize** (🔒) в правом верхнем углу. Введите токен в формате: `<ваш_токен>` и нажмите Confirm.
 3. **Создайте страну:** `POST /catalog/countries` -> `{"title": "Россия"}`. Вы получите объект с `id: 1`.
 4. **Создайте монету:** `POST /catalog/items`:
    ```json
